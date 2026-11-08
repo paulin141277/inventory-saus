@@ -1,0 +1,197 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Saus Inventory Mini App</title>
+    <script src="https://telegram.org/js/telegram-web-app.js"></script>
+    <style>
+        body { font-family: Arial, sans-serif; background-color: #f4f4f9; padding: 0; margin: 0; }
+        .header { background: linear-gradient(135deg, #512da8, #7b1fa2); color: white; padding: 15px 20px; display: flex; align-items: center; justify-content: space-between; border-bottom-left-radius: 15px; border-bottom-right-radius: 15px; box-shadow: 0 4px 6px rgba(0,0,0,0.1); }
+        .header-title h2 { margin: 0; font-size: 18px; }
+        .header-title p { margin: 3px 0 0; font-size: 12px; opacity: 0.8; }
+        .container { background: #fff; padding: 20px; border-radius: 12px; box-shadow: 0 2px 8px rgba(0,0,0,0.05); max-width: 500px; margin: 15px auto; }
+        .section-title { font-size: 15px; font-weight: bold; color: #333; margin-bottom: 15px; display: flex; align-items: center; gap: 8px; }
+        .form-group { margin-bottom: 12px; }
+        label { display: block; font-weight: bold; font-size: 13px; margin-bottom: 5px; color: #555; }
+        .input-row { display: flex; gap: 8px; align-items: center; }
+        input { width: 100%; padding: 10px; box-sizing: border-box; border: 1px solid #ddd; border-radius: 6px; font-size: 14px; background-color: #fafafa; }
+        input:focus { border-color: #7b1fa2; outline: none; background-color: #fff; }
+        .unit-badge { background-color: #eee; padding: 10px 12px; border-radius: 6px; font-size: 13px; color: #555; font-weight: bold; min-width: 40px; text-align: center; }
+        .calculated { background-color: #e8f5e9; border: 1px solid #81c784; font-weight: bold; color: #2e7d32; }
+        button.submit-btn { width: 100%; background: linear-gradient(135deg, #512da8, #7b1fa2); color: white; padding: 12px; border: none; border-radius: 8px; font-size: 16px; font-weight: bold; cursor: pointer; margin-top: 15px; box-shadow: 0 3px 5px rgba(0,0,0,0.2); }
+        button.submit-btn:hover { opacity: 0.9; }
+    </style>
+</head>
+<body>
+
+<div class="header">
+    <div class="header-title">
+        <h2>🍲 Saus Inventory</h2>
+        <p>Manajemen Produksi & Stok Saus</p>
+    </div>
+</div>
+
+<div class="container">
+    <div class="section-title">📦 Input Saus Inventory</div>
+    
+    <form id="inventoryForm">
+        <div class="form-group">
+            <label>Tanggal (TGL):</label>
+            <input type="date" id="tgl" required>
+        </div>
+
+        <div class="form-group">
+            <label>Barang Jadi Hari Ini:</label>
+            <div class="input-row">
+                <input type="number" id="barangJadi" value="0" oninput="hitungOtomatis()">
+                <div class="unit-badge">Dus</div>
+            </div>
+        </div>
+
+        <div class="form-group">
+            <label>Qty In Ke Prod:</label>
+            <div class="input-row">
+                <input type="number" id="qtyIn" value="0" oninput="hitungOtomatis()">
+                <div class="unit-badge">Dus</div>
+            </div>
+        </div>
+
+        <div class="form-group">
+            <label>Saus Sisa Kemarin:</label>
+            <div class="input-row">
+                <input type="number" id="sausKemarin" value="0" oninput="hitungOtomatis()">
+                <div class="unit-badge">Pcs</div>
+            </div>
+        </div>
+
+        <div class="form-group">
+            <label>Produksi Blm Dus Kemarin:</label>
+            <div class="input-row">
+                <input type="number" id="prodBlmKemarin" value="0" oninput="hitungOtomatis()">
+                <div class="unit-badge">Pcs</div>
+            </div>
+        </div>
+
+        <div class="form-group">
+            <label>Saus Sisa Hari Ini:</label>
+            <div class="input-row">
+                <input type="number" id="sausHariIni" value="0" oninput="hitungOtomatis()">
+                <div class="unit-badge">Pcs</div>
+            </div>
+        </div>
+
+        <div class="form-group">
+            <label>Produksi Blm Dus Hari Ini:</label>
+            <div class="input-row">
+                <input type="number" id="prodBlmHariIni" value="0" oninput="hitungOtomatis()">
+                <div class="unit-badge">Pcs</div>
+            </div>
+        </div>
+
+        <div class="form-group">
+            <label>Reject Saus Hari Ini:</label>
+            <div class="input-row">
+                <input type="number" id="rejectHariIni" value="0" oninput="hitungOtomatis()">
+                <div class="unit-badge">Pcs</div>
+            </div>
+        </div>
+
+        <div class="form-group">
+            <label>Saus Trial:</label>
+            <div class="input-row">
+                <input type="number" id="sausTrial" value="0" oninput="hitungOtomatis()">
+                <div class="unit-badge">Pcs</div>
+            </div>
+        </div>
+
+        <div class="form-group">
+            <label>Plus/Minus Hari Ini:</label>
+            <div class="input-row">
+                <input type="number" id="plusMinus" value="0" oninput="hitungOtomatis()">
+                <div class="unit-badge">Pcs</div>
+            </div>
+        </div>
+
+        <div class="form-group">
+            <label>Pemakaian (Otomatis):</label>
+            <input type="text" id="pemakaian" class="calculated" readonly>
+        </div>
+        
+        <div class="form-group">
+            <label>Kontrol (Otomatis):</label>
+            <input type="text" id="kontrol" class="calculated" readonly>
+        </div>
+
+        <button type="submit" class="submit-btn">💾 Simpan Data</button>
+    </form>
+</div>
+
+<script>
+    let tg = window.Telegram.WebApp;
+    tg.expand();
+
+    // Otomatis isi tanggal hari ini saat halaman dibuka
+    document.getElementById('tgl').valueAsDate = new Date();
+
+    function hitungOtomatis() {
+        let barangJadi = parseFloat(document.getElementById('barangJadi').value) || 0;
+        let qtyIn = parseFloat(document.getElementById('qtyIn').value) || 0;
+        let sausKemarin = parseFloat(document.getElementById('sausKemarin').value) || 0;
+        let prodBlmKemarin = parseFloat(document.getElementById('prodBlmKemarin').value) || 0;
+        let sausHariIni = parseFloat(document.getElementById('sausHariIni').value) || 0;
+        let prodBlmHariIni = parseFloat(document.getElementById('prodBlmHariIni').value) || 0;
+        let rejectHariIni = parseFloat(document.getElementById('rejectHariIni').value) || 0;
+        let sausTrial = parseFloat(document.getElementById('sausTrial').value) || 0;
+        let plusMinus = parseFloat(document.getElementById('plusMinus').value) || 0;
+
+        let pemakaian = (qtyIn * 1000) + sausKemarin + (prodBlmKemarin * 2) 
+                        - sausHariIni - (prodBlmHariIni * 2) 
+                        - rejectHariIni - sausTrial + plusMinus;
+
+        let kontrol = barangJadi * 20 * 2;
+
+        document.getElementById('pemakaian').value = pemakaian;
+        document.getElementById('kontrol').value = kontrol;
+    }
+
+    // Jalankan kalkulasi awal
+    hitungOtomatis();
+
+    document.getElementById('inventoryForm').addEventListener('submit', function(e) {
+        e.preventDefault();
+        
+        let data = {
+            tgl: document.getElementById('tgl').value,
+            barangJadi: document.getElementById('barangJadi').value,
+            qtyIn: document.getElementById('qtyIn').value,
+            sausKemarin: document.getElementById('sausKemarin').value,
+            prodBlmKemarin: document.getElementById('prodBlmKemarin').value,
+            sausHariIni: document.getElementById('sausHariIni').value,
+            prodBlmHariIni: document.getElementById('prodBlmHariIni').value,
+            rejectHariIni: document.getElementById('rejectHariIni').value,
+            sausTrial: document.getElementById('sausTrial').value,
+            plusMinus: document.getElementById('plusMinus').value,
+            pemakaian: document.getElementById('pemakaian').value,
+            kontrol: document.getElementById('kontrol').value
+        };
+
+        // Ganti dengan URL Web App Apps Script kamu yang sudah aktif
+        fetch('https://script.google.com/macros/s/AKfycbxba2vmGsd7QxD5ClMUwzSdtWOlAEYHy2nhfA6iaEkQKjC1TMG6p_LW8Y4cOrFhWFfjfQ/exec', {
+            method: 'POST',
+            mode: 'no-cors',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify(data)
+        }).then(() => {
+            alert('Data berhasil disimpan!');
+            document.getElementById('inventoryForm').reset();
+            document.getElementById('tgl').valueAsDate = new Date();
+            hitungOtomatis();
+        }).catch(error => {
+            alert('Terjadi kesalahan: ' + error);
+        });
+    });
+</script>
+
+</body>
+</html>
